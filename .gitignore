@@ -1,5 +1,6 @@
 *.bin
 *.elf
+*.geany
 
 # Ignore object files
 *.o
