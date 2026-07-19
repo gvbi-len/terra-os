@@ -1,6 +1,7 @@
 [BITS 32]
 
 global draw_char_at
+global font_table
 global draw_string_at
 
 extern place_pixel
@@ -128,104 +129,198 @@ font_table:
     db 0x66, 0x66, 0x66, 0x3C, 0x18, 0x18, 0x18, 0x00
     ; 0x5A - Z
     db 0x7E, 0x06, 0x0C, 0x18, 0x30, 0x60, 0x7E, 0x00
+    ; 0x5B - [
+    db 0x3C, 0x30, 0x30, 0x30, 0x30, 0x30, 0x3C, 0x00
+    ; 0x5C - backslash
+    db 0x40, 0x60, 0x30, 0x18, 0x0C, 0x06, 0x02, 0x00
+    ; 0x5D - ]
+    db 0x3C, 0x0C, 0x0C, 0x0C, 0x0C, 0x0C, 0x3C, 0x00
+    ; 0x5E - ^
+    db 0x18, 0x3C, 0x66, 0x00, 0x00, 0x00, 0x00, 0x00
+    ; 0x5F - _
+    db 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF
+    ; 0x60 - `
+    db 0x18, 0x18, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x00
+    ; 0x61 - a
+    db 0x00, 0x00, 0x3C, 0x06, 0x3E, 0x66, 0x3E, 0x00
+    ; 0x62 - b
+    db 0x60, 0x60, 0x7C, 0x66, 0x66, 0x66, 0x7C, 0x00
+    ; 0x63 - c
+    db 0x00, 0x00, 0x3C, 0x60, 0x60, 0x60, 0x3C, 0x00
+    ; 0x64 - d
+    db 0x06, 0x06, 0x3E, 0x66, 0x66, 0x66, 0x3E, 0x00
+    ; 0x65 - e
+    db 0x00, 0x00, 0x3C, 0x66, 0x7E, 0x60, 0x3C, 0x00
+    ; 0x66 - f
+    db 0x1C, 0x30, 0x30, 0x7C, 0x30, 0x30, 0x30, 0x00
+    ; 0x67 - g
+    db 0x00, 0x00, 0x3E, 0x66, 0x66, 0x3E, 0x06, 0x3C
+    ; 0x68 - h
+    db 0x60, 0x60, 0x7C, 0x66, 0x66, 0x66, 0x66, 0x00
+    ; 0x69 - i
+    db 0x18, 0x00, 0x38, 0x18, 0x18, 0x18, 0x3C, 0x00
+    ; 0x6A - j
+    db 0x0C, 0x00, 0x1C, 0x0C, 0x0C, 0x0C, 0x6C, 0x38
+    ; 0x6B - k
+    db 0x60, 0x60, 0x66, 0x6C, 0x78, 0x6C, 0x66, 0x00
+    ; 0x6C - l
+    db 0x38, 0x18, 0x18, 0x18, 0x18, 0x18, 0x3C, 0x00
+    ; 0x6D - m
+    db 0x00, 0x00, 0x66, 0x7F, 0x7F, 0x6B, 0x63, 0x00
+    ; 0x6E - n
+    db 0x00, 0x00, 0x7C, 0x66, 0x66, 0x66, 0x66, 0x00
+    ; 0x6F - o
+    db 0x00, 0x00, 0x3C, 0x66, 0x66, 0x66, 0x3C, 0x00
+    ; 0x70 - p
+    db 0x00, 0x00, 0x7C, 0x66, 0x66, 0x7C, 0x60, 0x60
+    ; 0x71 - q
+    db 0x00, 0x00, 0x3E, 0x66, 0x66, 0x3E, 0x06, 0x06
+    ; 0x72 - r
+    db 0x00, 0x00, 0x6C, 0x76, 0x60, 0x60, 0x60, 0x00
+    ; 0x73 - s
+    db 0x00, 0x00, 0x3E, 0x60, 0x3C, 0x06, 0x7C, 0x00
+    ; 0x74 - t
+    db 0x30, 0x30, 0x7C, 0x30, 0x30, 0x30, 0x1C, 0x00
+    ; 0x75 - u
+    db 0x00, 0x00, 0x66, 0x66, 0x66, 0x66, 0x3E, 0x00
+    ; 0x76 - v
+    db 0x00, 0x00, 0x66, 0x66, 0x66, 0x3C, 0x18, 0x00
+    ; 0x77 - w
+    db 0x00, 0x00, 0x63, 0x6B, 0x7F, 0x3E, 0x36, 0x00
+    ; 0x78 - x
+    db 0x00, 0x00, 0x66, 0x3C, 0x18, 0x3C, 0x66, 0x00
+    ; 0x79 - y
+    db 0x00, 0x00, 0x66, 0x66, 0x3E, 0x06, 0x3C, 0x00
+    ; 0x7A - z
+    db 0x00, 0x00, 0x7E, 0x0C, 0x18, 0x30, 0x7E, 0x00
+    ; 0x7B - {
+    db 0x0E, 0x18, 0x18, 0x70, 0x18, 0x18, 0x0E, 0x00
+    ; 0x7C - |
+    db 0x18, 0x18, 0x18, 0x00, 0x18, 0x18, 0x18, 0x00
+    ; 0x7D - }
+    db 0x70, 0x18, 0x18, 0x0E, 0x18, 0x18, 0x70, 0x00
+    ; 0x7E - ~
+    db 0x76, 0xDC, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 
 section .text
 
+; ── draw_char_at ─────────────────────────────────────────────────────────────
+; Draws a single 8x8 glyph.
+; In:  AL=char  EBX=x  EDI=y  DL=colour
+; All registers preserved via ebp stack frame (fully re-entrant).
+;
+; Stack frame layout (relative to ebp):
+;  ebp-4  = start_x      (dword)
+;  ebp-8  = start_y      (dword)
+;  ebp-9  = color        (byte,  padded to dword as ebp-12)
+;  ebp-16 = font_ptr     (dword)
+;  ebp-20 = current_y    (dword)
+;  ebp-21 = row_data     (byte,  padded to dword as ebp-24)
 draw_char_at:
+    push ebp
+    mov  ebp, esp
+    sub  esp, 24        ; 24 bytes of locals
     pusha
 
-    ; Save parameters
-    mov [.char], al
-    mov [.start_x], ebx
-    mov [.start_y], edi
-    mov [.color], dl
-
+    ; Save incoming params onto stack frame
     movzx eax, al
-    sub eax, 0x20
-    shl eax, 3
-    add eax, font_table
-    mov [.font_ptr], eax
+    mov  [ebp-4],  ebx          ; start_x
+    mov  [ebp-8],  edi          ; start_y
+    mov  [ebp-12], edx          ; colour (DL) – store full dword, use byte later
 
-    mov dword [.current_y], edi
-    mov ecx, CHAR_HEIGHT
+    ; Bounds check: clamp to space if outside 0x20–0x7E
+    cmp  eax, 0x20
+    jb   .clamp
+    cmp  eax, 0x7E
+    ja   .clamp
+    jmp  .calc_ptr
+.clamp:
+    mov  eax, 0x20
+.calc_ptr:
+    sub  eax, 0x20
+    shl  eax, 3
+    add  eax, font_table
+    mov  [ebp-16], eax          ; font_ptr
+    mov  eax, [ebp-8]
+    mov  [ebp-20], eax          ; current_y = start_y
+
+    mov  ecx, CHAR_HEIGHT
 
 .draw_row:
-    mov esi, [.font_ptr]
-    mov al, [esi]
-    mov [.row_data], al
+    mov  esi, [ebp-16]          ; font_ptr
+    mov  al,  [esi]
+    mov  [ebp-24], al           ; row_data (byte, upper bytes don't matter)
 
-    mov ebx, [.start_x]
-
-    ; Draw 8 bits
-    mov edx, 8
+    mov  ebx, [ebp-4]           ; start_x
+    mov  edx, 8                 ; bit counter
 
 .draw_bit:
-    mov al, [.row_data]
-    test al, 0x80
-    jz .skip_pixel
+    test byte [ebp-24], 0x80
+    jz   .skip_pixel
 
-    pusha
-    mov eax, ebx        ; X position
-    mov ah, [.color]    ; Color in AH
-    mov edi, [.current_y]
+    push ecx
+    push edx
+    mov  eax, ebx               ; X in AL
+    mov  ah,  [ebp-12]          ; colour byte (DL was saved as dword, byte at -12)
+    mov  edi, [ebp-20]          ; Y
     call place_pixel
-    popa
+    pop  edx
+    pop  ecx
 
 .skip_pixel:
-    shl byte [.row_data], 1
-    inc ebx
-    dec edx
-    jnz .draw_bit
+    shl  byte [ebp-24], 1
+    inc  ebx
+    dec  edx
+    jnz  .draw_bit
 
-    inc dword [.current_y]
-    inc dword [.font_ptr]
-    dec ecx
-    jnz .draw_row
+    inc  dword [ebp-20]         ; current_y++
+    inc  dword [ebp-16]         ; font_ptr++
+    dec  ecx
+    jnz  .draw_row
 
     popa
+    mov  esp, ebp
+    pop  ebp
     ret
 
-section .data
-.char db 0
-.start_x dd 0
-.start_y dd 0
-.color db 0
-.current_y dd 0
-.font_ptr dd 0
-.row_data db 0
-
-section .text
-
+; ── draw_string_at ────────────────────────────────────────────────────────────
+; Draws a null-terminated string.
+; In:  ESI=string ptr  EBX=x  EDI=y  DL=colour
+; All registers preserved. Stack-local state - fully re-entrant.
+;
+; Stack frame:
+;  ebp-4  = str_x      (dword)
+;  ebp-8  = str_y      (dword)
+;  ebp-12 = str_color  (dword, use byte at ebp-12)
+;  ebp-16 = str_ptr    (dword)
 draw_string_at:
+    push ebp
+    mov  ebp, esp
+    sub  esp, 16
     pusha
 
-    mov [.str_x], ebx
-    mov [.str_y], edi
-    mov [.str_color], dl
-    mov [.str_ptr], esi
+    mov  [ebp-4],  ebx          ; str_x
+    mov  [ebp-8],  edi          ; str_y
+    mov  [ebp-12], edx          ; str_color (DL)
+    mov  [ebp-16], esi          ; str_ptr
 
 .draw_next:
-    mov esi, [.str_ptr]
-    mov al, [esi]
-    test al, al
-    jz .done
+    mov  esi, [ebp-16]
+    mov  al,  [esi]
+    test al,  al
+    jz   .done
 
-    ; Draw character
-    mov ebx, [.str_x]
-    mov edi, [.str_y]
-    mov dl, [.str_color]
+    mov  ebx, [ebp-4]           ; current x
+    mov  edi, [ebp-8]           ; y
+    mov  dl,  [ebp-12]          ; colour
     call draw_char_at
 
-    add dword [.str_x], CHAR_WIDTH
-    inc dword [.str_ptr]
-    jmp .draw_next
+    add  dword [ebp-4], CHAR_WIDTH
+    inc  dword [ebp-16]
+    jmp  .draw_next
 
 .done:
     popa
+    mov  esp, ebp
+    pop  ebp
     ret
-
-section .data
-.str_x dd 0
-.str_y dd 0
-.str_color db 0
-.str_ptr dd 0

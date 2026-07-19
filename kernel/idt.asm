@@ -1,6 +1,7 @@
 [bits 32]
 
 global idt_init
+global set_idt_gate
 
 IDT_ENT_COUNT equ 256
 

@@ -6,18 +6,25 @@ frame_count dd 0
 color_offset db 0
 
 boot_msg1 db "COLOUR TEST: OK!", 0
-boot_msg2 db "0123456789 .,!?;:", 0
+boot_msg2 db "0123456789 .,!?;:#$&()*+-/", 0
 boot_msg3 db "ABCDEFGHIJKLMNOPQRSTUVWXYZ", 0
-boot_msg4 db "FONT TEST: OK!", 0
+boot_msg4 db "abcdefghijklmnopqrstuvwxyz", 0
+boot_msg5 db "FONT TEST: OK!", 0
+post_login_msg db "LOADING TERRA.OS...", 0
 
 section .text
 global kernel_main
+global clear_screen
 global place_pixel
 
 extern draw_char_at
 extern draw_string_at
 extern font_table
 extern idt_init
+extern keyboard_init
+extern login_screen
+extern mouse_init
+extern world_run
 
 kernel_main:
     cli
@@ -39,24 +46,20 @@ kernel_main:
 
     call colour_cycle_test  ; Second Colour Test
 
-    call clear_screen       ; TODO: For some reason, non 0 values don't work for
-                            ; the text bit, so for now, there won't be a 3rd clear
-                            ; screen to make the text visible.
-    call colour_test
-    call delay_medium
+    call clear_screen       ; Clear after colour cycle test
 
-    ; Test out the text
+    ; Font test: draw text in bright green (colour 10) on black
     mov ebx, 10
     mov edi, 30
-    mov dl, 0
+    mov dl, 10              ; Bright green
     mov esi, boot_msg1
     call draw_string_at
 
-    call delay_medium
+    call delay_long
 
     mov ebx, 10
     mov edi, 46
-    mov dl, 0
+    mov dl, 15
     mov esi, boot_msg2
     call draw_string_at
 
@@ -64,17 +67,34 @@ kernel_main:
 
     mov ebx, 10
     mov edi, 62
-    mov dl, 0
+    mov dl, 15
     mov esi, boot_msg3
     call draw_string_at
 
     call delay_medium
-
     mov ebx, 10
     mov edi, 78
-    mov dl, 0
+    mov dl, 15
     mov esi, boot_msg4
     call draw_string_at
+
+    call delay_long
+
+    mov ebx, 10
+    mov edi, 94
+    mov dl, 10              ; Bright green
+    mov esi, boot_msg5
+    call draw_string_at
+
+    call delay_long     ; Pause so player reads the font test
+
+    ; ── Boot sequence complete – init keyboard and show login ──
+    call keyboard_init
+    call login_screen   ; Returns only after successful login
+
+    ; ── Post-login: init mouse then enter the world ──
+    call mouse_init
+    call world_run      ; never returns
 
 main_loop:
     hlt
@@ -82,7 +102,7 @@ main_loop:
 
 colour_cycle_test:
     pusha
-    
+
     mov ecx, 0              ; Frame counter
 
 .cycle_loop:
@@ -147,25 +167,27 @@ colour_test:
     ret
 
 place_pixel:
+    ; Convention: AL = X (low byte), AH = colour, EDI = Y
     push ebx
     push ecx
     push edx
 
-    mov ebx, eax
-    mov ecx, edi
+    movzx ebx, al           ; EBX = X
+    movzx edx, ah           ; EDX = colour  (save NOW, before ecx is loaded)
+    mov   ecx, edi          ; ECX = Y
 
     cmp ebx, 320
     jae .done
     cmp ecx, 200
     jae .done
 
-    mov edx, ecx
-    imul edx, 320
-    add edx, ebx
+    mov eax, ecx
+    imul eax, 320
+    add eax, ebx            ; EAX = Y*320 + X
     mov edi, 0xA0000
-    add edi, edx
+    add edi, eax
 
-    mov [edi], ah
+    mov [edi], dl           ; Write colour (DL, not CL)
 
 .done:
     pop edx
