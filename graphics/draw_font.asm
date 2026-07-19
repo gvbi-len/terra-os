@@ -204,7 +204,7 @@ font_table:
 
 section .text
 
-; ── draw_char_at ─────────────────────────────────────────────────────────────
+; draw_char_at
 ; Draws a single 8x8 glyph.
 ; In:  AL=char  EBX=x  EDI=y  DL=colour
 ; All registers preserved via ebp stack frame (fully re-entrant).
@@ -283,7 +283,7 @@ draw_char_at:
     pop  ebp
     ret
 
-; ── draw_string_at ────────────────────────────────────────────────────────────
+; draw_string_at
 ; Draws a null-terminated string.
 ; In:  ESI=string ptr  EBX=x  EDI=y  DL=colour
 ; All registers preserved. Stack-local state - fully re-entrant.

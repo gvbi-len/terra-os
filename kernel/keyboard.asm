@@ -7,9 +7,8 @@ global kb_flush
 
 extern set_idt_gate
 
-; ─────────────────────────────────────────
 ;  Shared state
-; ─────────────────────────────────────────
+
 section .bss
 kb_buf:         resb 64     ; Circular input buffer
 kb_buf_head:    resd 1      ; Write index
@@ -41,7 +40,7 @@ sc_table_shift:
 
 section .text
 
-; ── keyboard_init ────────────────────────
+; keyboard_init
 ; Wire IRQ1 to keyboard_handler in the IDT
 ; Expects: set_idt_gate already exported from idt.asm
 ; We call it directly after idt_init, so we duplicate the gate-set inline.
@@ -69,7 +68,7 @@ keyboard_init:
 
 ; set_idt_gate is extern, called directly
 
-; ── keyboard_handler (ISR) ───────────────
+; keyboard_handler (ISR)
 keyboard_handler:
     pusha
 
@@ -130,7 +129,7 @@ keyboard_handler:
     popa
     iret
 
-; ── kb_get_char ──────────────────────────
+; kb_get_char
 ; Waits (via hlt) until a character is available, returns it in AL
 ; hlt is essential: without it the tight spin prevents IRQs on some
 ; QEMU configs and causes missed or repeated keypresses.
@@ -156,7 +155,7 @@ kb_get_char:
     hlt                 ; Sleep until IRQ fires (keyboard or any other)
     jmp .wait           ; Re-check buffer
 
-; ── kb_flush ─────────────────────────────
+; kb_flush
 ; Discard everything in the buffer
 kb_flush:
     mov eax, [kb_buf_head]

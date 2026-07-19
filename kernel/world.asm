@@ -8,9 +8,7 @@ extern mouse_y
 extern mouse_buttons
 extern mouse_event
 
-; ─────────────────────────────────────────
 ;  Constants
-; ─────────────────────────────────────────
 %define SCREEN_W        320
 %define SCREEN_H        200
 %define VRAM            0xA0000
@@ -27,7 +25,6 @@ extern mouse_event
 ; overwriting them.  160 blocks fills the 320x200 screen.
 %define MAX_STAMPS      160
 
-; ─────────────────────────────────────────
 section .bss
 
 ; Previous cursor position (so we can erase it cleanly)
@@ -44,13 +41,10 @@ last_event      resb 1
 stamp_list      resw MAX_STAMPS * 2
 stamp_count     resw 1
 
-; ─────────────────────────────────────────
 section .text
 
-; ══════════════════════════════════════════
 ;  world_run
 ;  Called after login succeeds. Never returns.
-; ══════════════════════════════════════════
 world_run:
     call clear_screen
 
@@ -74,14 +68,14 @@ world_run:
     call  draw_block
 
 .world_loop:
-    ; ── Has the mouse moved / button changed? ──
+    ; Has the mouse moved / button changed?
     mov al, [mouse_event]
     cmp al, [last_event]
     je  .no_event
 
     mov [last_event], al
 
-    ; ── Erase old cursor ──────────────────
+    ; Erase old cursor
     movzx ebx, word [prev_cursor_x]
     movzx edi, word [prev_cursor_y]
     ; Check if a stamp lives here before painting BG over it
@@ -96,10 +90,10 @@ world_run:
     call draw_block
 .skip_erase:
 
-    ; ── Redraw any stamp at old pos (if cursor was hiding one) ──
+    ; Redraw any stamp at old pos (if cursor was hiding one)
     ; (already handled by skip_erase – we left it painted)
 
-    ; ── New cursor position ───────────────
+    ; New cursor position
     movzx ebx, word [mouse_x]
     movzx edi, word [mouse_y]
 
@@ -117,7 +111,7 @@ world_run:
     mov  [prev_cursor_x], bx
     mov  [prev_cursor_y], di
 
-    ; ── Left-click edge: stamp a block ───
+    ; Left-click edge: stamp a block
     mov  al, [mouse_buttons]
     test al, 0x01              ; left button down?
     jz   .no_click
@@ -146,11 +140,10 @@ world_run:
     hlt
     jmp .world_loop
 
-; ══════════════════════════════════════════
 ;  stamp_block
 ;  Records current cursor pos in stamp_list and draws it.
 ;  EBX = x, EDI = y (clamped cursor position)
-; ══════════════════════════════════════════
+
 stamp_block:
     pusha
 
@@ -184,10 +177,8 @@ stamp_block:
     popa
     ret
 
-; ══════════════════════════════════════════
 ;  is_stamp_at
 ;  Returns EAX=1 if stamp_list contains (EBX, EDI), else EAX=0
-; ══════════════════════════════════════════
 is_stamp_at:
     push ecx
     push esi
@@ -221,13 +212,11 @@ is_stamp_at:
     pop  ecx
     ret
 
-; ══════════════════════════════════════════
 ;  draw_block
 ;  Fills an 8x8 block of pixels directly into VRAM.
 ;  EBX = x, EDI = y, DL = colour
 ;  Writes directly to 0xA0000 – no per-pixel call overhead.
 ;  Safe for X up to 319 (no AL width limit).
-; ══════════════════════════════════════════
 draw_block:
     pusha
 
@@ -256,10 +245,8 @@ draw_block:
     popa
     ret
 
-; ══════════════════════════════════════════
 ;  draw_border
 ;  Draws a 1-pixel bright-green border around the screen edge.
-; ══════════════════════════════════════════
 draw_border:
     pusha
 

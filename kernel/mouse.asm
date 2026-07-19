@@ -11,14 +11,11 @@ global mouse_event      ; incremented each time a full packet is processed
 
 extern set_idt_gate
 
-; ─────────────────────────────────────────
 ;  8042 ports
-; ─────────────────────────────────────────
 %define KBD_DATA    0x60
 %define KBD_STATUS  0x64
 %define KBD_CMD     0x64
 
-; ─────────────────────────────────────────
 section .bss
 mouse_x         resw 1
 mouse_y         resw 1
@@ -32,7 +29,7 @@ pkt_byte1       resb 1
 
 section .text
 
-; ── Wait helpers ─────────────────────────
+; Wait helpers
 ; Wait until 8042 input buffer empty (bit 1 of status = 0)
 wait_write:
     push eax
@@ -71,7 +68,7 @@ mouse_write:
     pop  eax
     ret
 
-; ── mouse_init ───────────────────────────
+; mouse_init
 mouse_init:
     pusha
 
@@ -128,7 +125,7 @@ mouse_init:
     popa
     ret
 
-; ── mouse_handler (ISR for INT 0x2C) ────
+; mouse_handler (ISR for INT 0x2C)
 ; PS/2 mouse sends a 3-byte packet: flags, dx, dy
 ; Bytes arrive one at a time, each triggering this IRQ.
 mouse_handler:
@@ -166,12 +163,12 @@ mouse_handler:
     ; Full packet in pkt_byte0 (flags), pkt_byte1 (dx), al (dy)
     mov byte [pkt_phase], 0    ; Reset for next packet
 
-    ; ── Update buttons ──
+    ; Update buttons
     mov bl, [pkt_byte0]
     and bl, 0x03               ; bits 0-1: left/right button
     mov [mouse_buttons], bl
 
-    ; ── Update X ──
+    ; Update X
     ; PS/2 gives a 9-bit two's complement delta:
     ;   low 8 bits = pkt_byte1, sign bit = pkt_byte0 bit 4.
     ; Zero-extend the magnitude first, then apply the sign separately.
@@ -210,7 +207,7 @@ mouse_handler:
 .x_store:
     mov  [mouse_x], ax
 
-    ; ── Update Y ──
+    ; Update Y
     ; Same 9-bit scheme; bit 5 = Y sign, bit 7 = Y overflow.
     ; PS/2 Y is positive-upward, screen is positive-downward → negate.
     ; Save AL (raw dy byte) before we clobber it.

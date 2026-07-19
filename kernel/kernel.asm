@@ -88,11 +88,11 @@ kernel_main:
 
     call delay_long     ; Pause so player reads the font test
 
-    ; ── Boot sequence complete – init keyboard and show login ──
+    ; Boot sequence complete – init keyboard and show login
     call keyboard_init
     call login_screen   ; Returns only after successful login
 
-    ; ── Post-login: init mouse then enter the world ──
+    ; Post-login: init mouse then enter the world
     call mouse_init
     call world_run      ; never returns
 

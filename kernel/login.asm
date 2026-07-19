@@ -9,16 +9,14 @@ extern kb_get_char
 extern kb_flush
 extern clear_screen
 
-; ─────────────────────────────────────────
 ;  Colour palette indices (Mode 13h default)
-; ─────────────────────────────────────────
 %define COL_BLACK       0
 %define COL_BLUE        1
 %define COL_DARK_GREEN  2
 %define COL_DARK_CYAN   3
 %define COL_RED         4
 %define COL_DRK_MAGENTA 5
-%define COL_BRONW       6
+%define COL_BROWN       6
 %define COL_LIGHT_GRAY  7
 %define COL_DARK_GRAY   8
 %define COL_BRIGHT_BLUE 9
@@ -29,9 +27,7 @@ extern clear_screen
 %define COL_YELLOW      14
 %define COL_WHITE       15
 
-; ─────────────────────────────────────────
 ;  Layout constants  (320×200, 8×8 font)
-; ─────────────────────────────────────────
 %define SCREEN_W        320
 %define SCREEN_H        200
 %define CHAR_W          8
@@ -71,9 +67,7 @@ extern clear_screen
 ; Hint Y
 %define HINT_Y          150
 
-; ─────────────────────────────────────────
 ;  Static strings
-; ─────────────────────────────────────────
 section .data
 
 ; Placeholder Credentials
@@ -94,24 +88,21 @@ str_hint_p      db "PASSWORD IS MINE", 0
 str_cursor      db "_", 0
 str_star        db "*", 0
 
-; ── Input buffers ──
+; Input buffers
 user_buf        times (MAX_INPUT+1) db 0
 pass_buf        times (MAX_INPUT+1) db 0
 user_len        dd 0
 pass_len        dd 0
 
-; ── State ──
+; State
 login_state     db 0    ; 0=entering user, 1=entering pass, 2=result
 login_result    db 0    ; 0=none, 1=granted, 2=denied
 cursor_blink    dd 0
 
-; ─────────────────────────────────────────
 section .text
 
-; ══════════════════════════════════════════
 ;  login_screen
 ;  Entry point called from kernel_main.
-; ══════════════════════════════════════════
 login_screen:
     pusha
 
@@ -149,7 +140,7 @@ login_screen:
     je  .append_user
     jmp .append_pass
 
-; ── Append character to username ─────────────────
+; Append character to username
 .append_user:
     mov ecx, [user_len]
     cmp ecx, MAX_INPUT
@@ -159,7 +150,7 @@ login_screen:
     call redraw_user_field
     jmp .input_loop
 
-; ── Append character to password ─────────────────
+; Append character to password
 .append_pass:
     mov ecx, [pass_len]
     cmp ecx, MAX_INPUT
@@ -169,7 +160,7 @@ login_screen:
     call redraw_pass_field
     jmp .input_loop
 
-; ── Backspace Handler ──────────────────────────
+; Backspace Handler
 .handle_backspace:
     cmp byte [login_state], 0
     je  .bs_user
@@ -192,7 +183,7 @@ login_screen:
     call redraw_user_field
     jmp .input_loop
 
-; ── Enter Handler ──────────────────────────────
+; Enter Handler
 .handle_enter:
     cmp byte [login_state], 0
     jne .enter_pass
@@ -239,10 +230,8 @@ login_screen:
     popa
     ret
 
-; ══════════════════════════════════════════
 ;  validate_login
 ;  Compares user_buf / pass_buf to valid_*
-; ══════════════════════════════════════════
 validate_login:
     pusha
 
@@ -285,30 +274,24 @@ validate_login:
     popa
     ret
 
-; ══════════════════════════════════════════
 ;  draw_login_ui  –  static frame
-; ══════════════════════════════════════════
 draw_login_ui:
     pusha
 
-    ; ── Title ──
     mov ebx, TITLE_X
     mov edi, TITLE_Y
     mov dl,  COL_MAGENTA
     mov esi, str_title
     call draw_string_at
 
-    ; ── Subtitle ──
     mov ebx, SUBTITLE_X
     mov edi, SUBTITLE_Y
     mov dl,  COL_DARK_GREEN
     mov esi, str_subtitle
     call draw_string_at
 
-    ; ── Decorative lines ──
     call draw_deco_lines
 
-    ; ── Field labels ──
     mov ebx, LABEL_X
     mov edi, USER_LABEL_Y
     mov dl,  COL_CYAN
@@ -321,26 +304,23 @@ draw_login_ui:
     mov esi, str_pass_label
     call draw_string_at
 
-    ; ── Empty field boxes ──
     call draw_field_boxes
 
-    ; ── Hint text ──
     mov ebx, 40
     mov edi, HINT_Y
-    mov dl,  COL_DARK_GRAY
+    mov dl,  COL_MAGENTA
     mov esi, str_hint_u
     call draw_string_at
 
     mov ebx, 40
     mov edi, HINT_Y + 12
-    mov dl,  COL_DARK_GRAY
+    mov dl,  COL_DRK_MAGENTA
     mov esi, str_hint_p
     call draw_string_at
 
-    ; ── Enter hint ──
-    mov ebx, 56
+    mov ebx, 40
     mov edi, HINT_Y + 26
-    mov dl,  COL_DARK_GRAY
+    mov dl,  COL_MAGENTA
     mov esi, str_enter_msg
     call draw_string_at
 
@@ -351,9 +331,7 @@ draw_login_ui:
     popa
     ret
 
-; ──────────────────────────────────────────
 ;  draw_deco_lines  –  horizontal separators
-; ──────────────────────────────────────────
 draw_deco_lines:
     pusha
     mov edi, 0xA0000
@@ -388,9 +366,7 @@ draw_deco_lines:
     popa
     ret
 
-; ──────────────────────────────────────────
-;  draw_field_boxes  –  outline rectangles
-; ──────────────────────────────────────────
+;  draw_field_boxes outline rectangles
 draw_field_boxes:
     pusha
     ; Username box  (store colour in AL last so we don't lose it)
@@ -500,10 +476,8 @@ section .data
 
 section .text
 
-; ══════════════════════════════════════════
 ;  redraw_user_field
 ;  Clears the username field area, redraws text + cursor if active
-; ══════════════════════════════════════════
 redraw_user_field:
     pusha
     ; Clear field background
@@ -555,10 +529,8 @@ redraw_user_field:
     popa
     ret
 
-; ══════════════════════════════════════════
 ;  redraw_pass_field
 ;  Same but draws * for each character
-; ══════════════════════════════════════════
 redraw_pass_field:
     pusha
     ; Clear
@@ -621,11 +593,9 @@ redraw_pass_field:
     popa
     ret
 
-; ══════════════════════════════════════════
 ;  draw_result
 ;  Clears the screen and shows result centred,
 ;  replacing the login UI entirely so nothing appends.
-; ══════════════════════════════════════════
 draw_result:
     pusha
 
@@ -650,7 +620,6 @@ draw_result:
     cmp byte [login_result], 1
     je  .show_granted
 
-    ; ── DENIED ──
     ; Centre "INCORRECT USERNAME OR PASSWORD" (30 chars = 240px) → X=40
     mov ebx, 40
     mov edi, 90
@@ -659,7 +628,7 @@ draw_result:
     call draw_string_at
 
     ; "PRESS ENTER TO TRY AGAIN" hint
-    mov ebx, 56
+    mov ebx, 40
     mov edi, 108
     mov dl,  COL_RED
     mov esi, str_enter_msg
@@ -667,7 +636,6 @@ draw_result:
     jmp .done
 
 .show_granted:
-    ; ── GRANTED ──
     ; Centre "USER CONFIRMED" (14 chars = 112px) → X=104
     mov ebx, 104
     mov edi, 90
