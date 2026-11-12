@@ -9,7 +9,7 @@ boot_msg1 db "COLOUR TEST: OK!", 0
 boot_msg2 db "0123456789 .,!?;:#$&()*+-/", 0
 boot_msg3 db "ABCDEFGHIJKLMNOPQRSTUVWXYZ", 0
 boot_msg4 db "abcdefghijklmnopqrstuvwxyz", 0
-boot_msg5 db "FONT TEST: OK!", 0
+boot_msg5 db "FONT TEST COMPLETE!", 0
 post_login_msg db "LOADING TERRA.OS...", 0
 
 section .text
